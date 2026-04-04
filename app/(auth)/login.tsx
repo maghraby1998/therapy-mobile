@@ -1,29 +1,60 @@
 import { Link } from 'expo-router';
+import { useMutation } from '@apollo/client';
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { ScreenShell } from '@/components/screen-shell';
 import { Colors } from '@/constants/theme';
+import { LOGIN_MUTATION, type LoginMutationData, type LoginMutationVariables } from '@/graphql/auth';
+import { setApolloAccessToken } from '@/lib/apollo';
 
 export default function LoginScreen() {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [login, { loading }] = useMutation<LoginMutationData, LoginMutationVariables>(LOGIN_MUTATION);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmedIdentifier = emailOrPhone.trim();
+    const trimmedPassword = password.trim();
 
-    if (!trimmedIdentifier || !password.trim()) {
+    if (!trimmedIdentifier || !trimmedPassword) {
       setErrorMessage('Please enter your email or phone number and your password.');
       return;
     }
 
-    if (password.trim().length < 6) {
+    if (trimmedPassword.length < 6) {
       setErrorMessage('Password must be at least 6 characters long.');
       return;
     }
 
     setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      const { data } = await login({
+        variables: {
+          input: {
+            emailOrPhone: trimmedIdentifier,
+            password: trimmedPassword,
+          },
+        },
+      });
+
+      const payload = data?.login;
+
+      if (!payload) {
+        setErrorMessage('We could not complete the login request. Please try again.');
+        return;
+      }
+
+      setApolloAccessToken(payload.accessToken);
+      setSuccessMessage(`Welcome back, ${payload.user.email}.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Something went wrong while signing in.';
+      setErrorMessage(message);
+    }
   };
 
   return (
@@ -57,9 +88,10 @@ export default function LoginScreen() {
           />
 
           {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+          {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
 
-          <Pressable style={styles.primaryButton} onPress={handleSubmit}>
-            <Text style={styles.primaryButtonText}>Continue</Text>
+          <Pressable style={[styles.primaryButton, loading && styles.primaryButtonDisabled]} onPress={handleSubmit} disabled={loading}>
+            <Text style={styles.primaryButtonText}>{loading ? 'Signing in...' : 'Continue'}</Text>
           </Pressable>
 
           <Link href="/(auth)/register" style={styles.link}>
@@ -127,12 +159,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  successText: {
+    color: Colors.success,
+    fontSize: 14,
+    lineHeight: 20,
+  },
   primaryButton: {
     backgroundColor: Colors.primary,
     borderRadius: 18,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 4,
+  },
+  primaryButtonDisabled: {
+    opacity: 0.7,
   },
   primaryButtonText: {
     color: Colors.text,

@@ -1,54 +1,117 @@
-import { Link } from 'expo-router';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useMutation } from "@apollo/client";
+import { Link } from "expo-router";
+import { useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-import { ScreenShell } from '@/components/screen-shell';
-import { type UserRole } from '@/constants/session';
-import { Colors } from '@/constants/theme';
+import { ScreenShell } from "@/components/screen-shell";
+import { type UserRole } from "@/constants/session";
+import { Colors } from "@/constants/theme";
+import {
+  REGISTER_MUTATION,
+  type RegisterMutationData,
+  type RegisterMutationVariables,
+} from "@/graphql/auth";
+import { setApolloAccessToken } from "@/lib/apollo";
 
 export default function RegisterScreen() {
-  const [role, setRole] = useState<UserRole>('patient');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [role, setRole] = useState<UserRole>("patient");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [register, { loading }] = useMutation<
+    RegisterMutationData,
+    RegisterMutationVariables
+  >(REGISTER_MUTATION);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmedEmail = email.trim();
     const trimmedPhone = phone.trim();
     const trimmedPassword = password.trim();
 
     if (!trimmedEmail || !trimmedPhone || !trimmedPassword) {
-      setErrorMessage('Please complete all fields before creating your account.');
+      setErrorMessage(
+        "Please complete all fields before creating your account.",
+      );
       return;
     }
 
-    if (!trimmedEmail.includes('@')) {
-      setErrorMessage('Please enter a valid email address.');
+    if (!trimmedEmail.includes("@")) {
+      setErrorMessage("Please enter a valid email address.");
       return;
     }
 
     if (trimmedPhone.length < 8) {
-      setErrorMessage('Please enter a valid phone number.');
+      setErrorMessage("Please enter a valid phone number.");
       return;
     }
 
     if (trimmedPassword.length < 6) {
-      setErrorMessage('Password must be at least 6 characters long.');
+      setErrorMessage("Password must be at least 6 characters long.");
       return;
     }
 
-    setErrorMessage('');
+    setErrorMessage("");
+    setSuccessMessage("");
+
+    try {
+      console.log("here");
+
+      const { data } = await register({
+        variables: {
+          input: {
+            email: trimmedEmail,
+            phone: trimmedPhone,
+            password: trimmedPassword,
+            role,
+          },
+        },
+      });
+
+      console.log("data finished", data);
+
+      const payload = data?.register;
+
+      if (!payload) {
+        setErrorMessage("We could not create your account. Please try again.");
+        return;
+      }
+
+      setApolloAccessToken(payload.accessToken);
+      setSuccessMessage(`Account created for ${payload.user.email}.`);
+    } catch (error) {
+      console.log("error", error);
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while creating your account.";
+      setErrorMessage(message);
+    }
   };
 
   return (
     <ScreenShell>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.hero}>
           <Text style={styles.kicker}>Join The Platform</Text>
-          <Text style={styles.title}>Create a secure account for patients or doctors.</Text>
+          <Text style={styles.title}>
+            Create a secure account for patients or doctors.
+          </Text>
           <Text style={styles.subtitle}>
-            Choose how you’ll use the app and we’ll tailor the experience around your role.
+            Choose how you’ll use the app and we’ll tailor the experience around
+            your role.
           </Text>
         </View>
 
@@ -56,16 +119,22 @@ export default function RegisterScreen() {
           <Text style={styles.cardTitle}>Register</Text>
 
           <View style={styles.roleRow}>
-            {(['patient', 'doctor'] as UserRole[]).map((option) => {
+            {(["patient", "doctor"] as UserRole[]).map((option) => {
               const selected = role === option;
 
               return (
                 <Pressable
                   key={option}
                   style={[styles.roleChip, selected && styles.roleChipSelected]}
-                  onPress={() => setRole(option)}>
-                  <Text style={[styles.roleChipText, selected && styles.roleChipTextSelected]}>
-                    {option === 'patient' ? 'Patient' : 'Doctor'}
+                  onPress={() => setRole(option)}
+                >
+                  <Text
+                    style={[
+                      styles.roleChipText,
+                      selected && styles.roleChipTextSelected,
+                    ]}
+                  >
+                    {option === "patient" ? "Patient" : "Doctor"}
                   </Text>
                 </Pressable>
               );
@@ -99,10 +168,24 @@ export default function RegisterScreen() {
             onChangeText={setPassword}
           />
 
-          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : null}
+          {successMessage ? (
+            <Text style={styles.successText}>{successMessage}</Text>
+          ) : null}
 
-          <Pressable style={styles.primaryButton} onPress={handleSubmit}>
-            <Text style={styles.primaryButtonText}>Create Account</Text>
+          <Pressable
+            style={[
+              styles.primaryButton,
+              loading && styles.primaryButtonDisabled,
+            ]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            <Text style={styles.primaryButtonText}>
+              {loading ? "Creating account..." : "Create Account"}
+            </Text>
           </Pressable>
 
           <Link href="/(auth)/login" style={styles.link}>
@@ -118,7 +201,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: 24,
-    justifyContent: 'center',
+    justifyContent: "center",
     gap: 24,
   },
   hero: {
@@ -127,14 +210,14 @@ const styles = StyleSheet.create({
   kicker: {
     color: Colors.accent,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 2,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   title: {
     color: Colors.text,
     fontSize: 32,
-    fontWeight: '800',
+    fontWeight: "800",
     lineHeight: 38,
   },
   subtitle: {
@@ -153,10 +236,10 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: Colors.text,
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   roleRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   roleChip: {
@@ -166,7 +249,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: Colors.border,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
   },
   roleChipSelected: {
     backgroundColor: Colors.primary,
@@ -175,7 +258,7 @@ const styles = StyleSheet.create({
   roleChipText: {
     color: Colors.textMuted,
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   roleChipTextSelected: {
     color: Colors.text,
@@ -195,22 +278,30 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
+  successText: {
+    color: Colors.success,
+    fontSize: 14,
+    lineHeight: 20,
+  },
   primaryButton: {
     backgroundColor: Colors.primary,
     borderRadius: 18,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 4,
+  },
+  primaryButtonDisabled: {
+    opacity: 0.7,
   },
   primaryButtonText: {
     color: Colors.text,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   link: {
     color: Colors.accent,
     fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
 });

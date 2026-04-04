@@ -4,10 +4,10 @@ import {
   HttpLink,
   InMemoryCache,
   NormalizedCacheObject,
-} from '@apollo/client';
-import { setContext } from '@apollo/client/link/context';
+} from "@apollo/client";
+import { setContext } from "@apollo/client/link/context";
 
-const GRAPHQL_API_URL = 'http://localhost:5000/graphql';
+const GRAPHQL_API_URL = "http://10.0.2.2:5000/graphql";
 
 let accessToken: string | null = null;
 
@@ -30,9 +30,10 @@ const httpLink = new HttpLink({
 
 const link = ApolloLink.from([authLink, httpLink]);
 
-export const apolloClient: ApolloClient<NormalizedCacheObject> = new ApolloClient({
-  link,
-  cache: new InMemoryCache(),
-});
+export const apolloClient: ApolloClient<NormalizedCacheObject> =
+  new ApolloClient({
+    link,
+    cache: new InMemoryCache(),
+  });
 
 export { GRAPHQL_API_URL };

@@ -1,29 +1,31 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
+import { DarkTheme } from '@react-navigation/native';
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
-
 export const Colors = {
-  light: {
-    text: '#11181C',
-    background: '#fff',
-    tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
-  },
-  dark: {
-    text: '#ECEDEE',
-    background: '#151718',
-    tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+  background: '#120F2F',
+  backgroundElevated: '#1A1642',
+  surface: '#211B54',
+  surfaceMuted: '#2A2368',
+  primary: '#7C5CFF',
+  primarySoft: '#9E8BFF',
+  accent: '#4EC5F1',
+  text: '#F5F7FF',
+  textMuted: '#A9B0D0',
+  border: '#3A3279',
+  danger: '#FF7DA6',
+  success: '#63E6BE',
+};
+
+export const AppNavigationTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: Colors.background,
+    card: Colors.backgroundElevated,
+    primary: Colors.primary,
+    text: Colors.text,
+    border: Colors.border,
+    notification: Colors.accent,
   },
 };
 

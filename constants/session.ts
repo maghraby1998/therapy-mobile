@@ -1,9 +1,14 @@
 export type UserRole = 'patient' | 'doctor';
 
-export const isAuth = false;
-export const userRole: UserRole = 'patient';
+export type SessionUser = {
+  id: string;
+  email: string;
+};
 
-export const currentUser = {
-  id: 'user-preview-id',
-  email: 'demo@therapy.app',
+export type SessionStatus = 'loading' | 'authenticated' | 'unauthenticated';
+
+export type PersistedSession = {
+  accessToken: string;
+  user: SessionUser;
+  role: UserRole;
 };

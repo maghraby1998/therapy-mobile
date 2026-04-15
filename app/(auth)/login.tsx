@@ -11,19 +11,20 @@ import {
 } from "react-native";
 
 import { ScreenShell } from "@/components/screen-shell";
+import { useSession } from "@/components/providers/session-provider";
 import { Colors } from "@/constants/theme";
 import {
   LOGIN_MUTATION,
   type LoginMutationData,
   type LoginMutationVariables,
 } from "@/graphql/auth";
-import { setApolloAccessToken } from "@/lib/apollo";
 
 export default function LoginScreen() {
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const { signIn } = useSession();
   const [login, { loading }] = useMutation<
     LoginMutationData,
     LoginMutationVariables
@@ -59,7 +60,6 @@ export default function LoginScreen() {
       });
 
       const payload = data?.login;
-      console.log("payload", payload);
 
       if (!payload) {
         setErrorMessage(
@@ -68,7 +68,21 @@ export default function LoginScreen() {
         return;
       }
 
-      setApolloAccessToken(payload.accessToken);
+      if (!payload.user.role) {
+        setErrorMessage(
+          "Your account role was not included in the login response.",
+        );
+        return;
+      }
+
+      await signIn({
+        accessToken: payload.accessToken,
+        user: {
+          id: payload.user.id,
+          email: payload.user.email,
+        },
+        role: payload.user.role,
+      });
       setSuccessMessage(`Welcome back, ${payload.user.email}.`);
     } catch (error) {
       const message =

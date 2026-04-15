@@ -1,10 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { ScreenShell } from '@/components/screen-shell';
-import { currentUser } from '@/constants/session';
+import { useSession } from '@/components/providers/session-provider';
 import { Colors } from '@/constants/theme';
 
 export default function PatientHomeScreen() {
+  const { user } = useSession();
+
   return (
     <ScreenShell>
       <View style={styles.container}>
@@ -13,13 +15,13 @@ export default function PatientHomeScreen() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Authenticated user preview</Text>
-          <Text style={styles.cardText}>id: {currentUser.id}</Text>
-          <Text style={styles.cardText}>email: {currentUser.email}</Text>
+          <Text style={styles.cardText}>id: {user?.id ?? 'Unavailable'}</Text>
+          <Text style={styles.cardText}>email: {user?.email ?? 'Unavailable'}</Text>
         </View>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Next build steps</Text>
-          <Text style={styles.cardText}>Wire the access token into secure storage.</Text>
+          <Text style={styles.cardText}>Access token is now restored from secure storage.</Text>
           <Text style={styles.cardText}>Fetch therapist matches and session history.</Text>
         </View>
       </View>

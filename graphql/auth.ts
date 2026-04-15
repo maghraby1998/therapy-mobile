@@ -8,6 +8,7 @@ export const LOGIN_MUTATION = gql`
       user {
         id
         email
+        role
       }
     }
   }
@@ -21,6 +22,7 @@ export const REGISTER_MUTATION = gql`
       user {
         id
         email
+        role
       }
     }
   }
@@ -31,6 +33,7 @@ export type UserRole = 'patient' | 'doctor';
 export type AuthUser = {
   id: string;
   email: string;
+  role?: UserRole | null;
 };
 
 export type AuthPayload = {

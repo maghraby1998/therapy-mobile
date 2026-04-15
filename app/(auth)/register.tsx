@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import { ScreenShell } from "@/components/screen-shell";
+import { useSession } from "@/components/providers/session-provider";
 import { type UserRole } from "@/constants/session";
 import { Colors } from "@/constants/theme";
 import {
@@ -18,7 +19,6 @@ import {
   type RegisterMutationData,
   type RegisterMutationVariables,
 } from "@/graphql/auth";
-import { setApolloAccessToken } from "@/lib/apollo";
 
 export default function RegisterScreen() {
   const [role, setRole] = useState<UserRole>("patient");
@@ -27,6 +27,7 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const { signIn } = useSession();
   const [register, { loading }] = useMutation<
     RegisterMutationData,
     RegisterMutationVariables
@@ -63,8 +64,6 @@ export default function RegisterScreen() {
     setSuccessMessage("");
 
     try {
-      console.log("here");
-
       const { data } = await register({
         variables: {
           input: {
@@ -76,8 +75,6 @@ export default function RegisterScreen() {
         },
       });
 
-      console.log("data finished", data);
-
       const payload = data?.register;
 
       if (!payload) {
@@ -85,11 +82,16 @@ export default function RegisterScreen() {
         return;
       }
 
-      setApolloAccessToken(payload.accessToken);
+      await signIn({
+        accessToken: payload.accessToken,
+        user: {
+          id: payload.user.id,
+          email: payload.user.email,
+        },
+        role: payload.user.role ?? role,
+      });
       setSuccessMessage(`Account created for ${payload.user.email}.`);
     } catch (error) {
-      console.log("error", error);
-
       const message =
         error instanceof Error
           ? error.message

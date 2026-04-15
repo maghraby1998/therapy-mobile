@@ -1,10 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 
 import { ScreenShell } from '@/components/screen-shell';
-import { currentUser } from '@/constants/session';
+import { useSession } from '@/components/providers/session-provider';
 import { Colors } from '@/constants/theme';
 
 export default function DoctorOverviewScreen() {
+  const { user } = useSession();
+
   return (
     <ScreenShell>
       <View style={styles.container}>
@@ -13,8 +15,8 @@ export default function DoctorOverviewScreen() {
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Authenticated user preview</Text>
-          <Text style={styles.cardText}>id: {currentUser.id}</Text>
-          <Text style={styles.cardText}>email: {currentUser.email}</Text>
+          <Text style={styles.cardText}>id: {user?.id ?? 'Unavailable'}</Text>
+          <Text style={styles.cardText}>email: {user?.email ?? 'Unavailable'}</Text>
         </View>
 
         <View style={styles.card}>

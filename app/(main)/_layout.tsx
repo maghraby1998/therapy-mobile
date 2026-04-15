@@ -1,15 +1,17 @@
 import { Redirect, Stack } from 'expo-router';
 
-import { isAuth, userRole } from '@/constants/session';
+import { useSession } from '@/components/providers/session-provider';
 
 export default function MainLayout() {
-  if (!isAuth) {
+  const { isAuthenticated, role } = useSession();
+
+  if (!isAuthenticated || !role) {
     return <Redirect href="/(auth)/login" />;
   }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {userRole === 'doctor' ? (
+      {role === 'doctor' ? (
         <Stack.Screen name="(doctor)" />
       ) : (
         <Stack.Screen name="(patient)" />

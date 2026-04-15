@@ -1,36 +1,52 @@
-import { Link } from 'expo-router';
-import { useMutation } from '@apollo/client';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useMutation } from "@apollo/client";
+import { Link } from "expo-router";
+import { useState } from "react";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
-import { ScreenShell } from '@/components/screen-shell';
-import { Colors } from '@/constants/theme';
-import { LOGIN_MUTATION, type LoginMutationData, type LoginMutationVariables } from '@/graphql/auth';
-import { setApolloAccessToken } from '@/lib/apollo';
+import { ScreenShell } from "@/components/screen-shell";
+import { Colors } from "@/constants/theme";
+import {
+  LOGIN_MUTATION,
+  type LoginMutationData,
+  type LoginMutationVariables,
+} from "@/graphql/auth";
+import { setApolloAccessToken } from "@/lib/apollo";
 
 export default function LoginScreen() {
-  const [emailOrPhone, setEmailOrPhone] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [login, { loading }] = useMutation<LoginMutationData, LoginMutationVariables>(LOGIN_MUTATION);
+  const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [login, { loading }] = useMutation<
+    LoginMutationData,
+    LoginMutationVariables
+  >(LOGIN_MUTATION);
 
   const handleSubmit = async () => {
     const trimmedIdentifier = emailOrPhone.trim();
     const trimmedPassword = password.trim();
 
     if (!trimmedIdentifier || !trimmedPassword) {
-      setErrorMessage('Please enter your email or phone number and your password.');
+      setErrorMessage(
+        "Please enter your email or phone number and your password.",
+      );
       return;
     }
 
     if (trimmedPassword.length < 6) {
-      setErrorMessage('Password must be at least 6 characters long.');
+      setErrorMessage("Password must be at least 6 characters long.");
       return;
     }
 
-    setErrorMessage('');
-    setSuccessMessage('');
+    setErrorMessage("");
+    setSuccessMessage("");
 
     try {
       const { data } = await login({
@@ -43,27 +59,40 @@ export default function LoginScreen() {
       });
 
       const payload = data?.login;
+      console.log("payload", payload);
 
       if (!payload) {
-        setErrorMessage('We could not complete the login request. Please try again.');
+        setErrorMessage(
+          "We could not complete the login request. Please try again.",
+        );
         return;
       }
 
       setApolloAccessToken(payload.accessToken);
       setSuccessMessage(`Welcome back, ${payload.user.email}.`);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Something went wrong while signing in.';
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while signing in.";
       setErrorMessage(message);
     }
   };
 
   return (
     <ScreenShell>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.hero}>
           <Text style={styles.kicker}>MindBridge</Text>
-          <Text style={styles.title}>Therapy that feels calm before the first session.</Text>
-          <Text style={styles.subtitle}>Sign in to continue your care journey in one calm place.</Text>
+          <Text style={styles.title}>
+            Therapy that feels calm before the first session.
+          </Text>
+          <Text style={styles.subtitle}>
+            Sign in to continue your care journey in one calm place.
+          </Text>
         </View>
 
         <View style={styles.card}>
@@ -87,11 +116,24 @@ export default function LoginScreen() {
             onChangeText={setPassword}
           />
 
-          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
-          {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : null}
+          {successMessage ? (
+            <Text style={styles.successText}>{successMessage}</Text>
+          ) : null}
 
-          <Pressable style={[styles.primaryButton, loading && styles.primaryButtonDisabled]} onPress={handleSubmit} disabled={loading}>
-            <Text style={styles.primaryButtonText}>{loading ? 'Signing in...' : 'Continue'}</Text>
+          <Pressable
+            style={[
+              styles.primaryButton,
+              loading && styles.primaryButtonDisabled,
+            ]}
+            onPress={handleSubmit}
+            disabled={loading}
+          >
+            <Text style={styles.primaryButtonText}>
+              {loading ? "Signing in..." : "Continue"}
+            </Text>
           </Pressable>
 
           <Link href="/(auth)/register" style={styles.link}>
@@ -107,7 +149,7 @@ const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
     padding: 24,
-    justifyContent: 'center',
+    justifyContent: "center",
     gap: 24,
   },
   hero: {
@@ -116,14 +158,14 @@ const styles = StyleSheet.create({
   kicker: {
     color: Colors.accent,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 2,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   title: {
     color: Colors.text,
     fontSize: 34,
-    fontWeight: '800',
+    fontWeight: "800",
     lineHeight: 40,
   },
   subtitle: {
@@ -142,7 +184,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: Colors.text,
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   input: {
     backgroundColor: Colors.surface,
@@ -168,7 +210,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     borderRadius: 18,
     paddingVertical: 16,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 4,
   },
   primaryButtonDisabled: {
@@ -177,12 +219,12 @@ const styles = StyleSheet.create({
   primaryButtonText: {
     color: Colors.text,
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   link: {
     color: Colors.accent,
     fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
+    fontWeight: "600",
+    textAlign: "center",
   },
 });

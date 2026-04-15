@@ -7,7 +7,7 @@ import {
 } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 
-const GRAPHQL_API_URL = "http://10.0.2.2:5000/graphql";
+const GRAPHQL_API_URL = "https://1d79-197-53-211-10.ngrok-free.app/graphql";
 
 let accessToken: string | null = null;
 

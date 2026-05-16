@@ -33,6 +33,13 @@ export default function DoctorTabsLayout() {
           tabBarIcon: ({ color, size }) => <MaterialIcons color={color} name="groups" size={size} />,
         }}
       />
+      <Tabs.Screen
+        name="menu"
+        options={{
+          title: 'Menu',
+          tabBarIcon: ({ color, size }) => <MaterialIcons color={color} name="menu" size={size} />,
+        }}
+      />
     </Tabs>
   );
 }

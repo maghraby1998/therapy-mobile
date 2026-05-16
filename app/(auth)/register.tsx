@@ -1,6 +1,5 @@
 import { useMutation } from "@apollo/client";
 import { Link } from "expo-router";
-import { useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -10,8 +9,8 @@ import {
   View,
 } from "react-native";
 
-import { ScreenShell } from "@/components/screen-shell";
 import { useSession } from "@/components/providers/session-provider";
+import { ScreenShell } from "@/components/screen-shell";
 import { type UserRole } from "@/constants/session";
 import { Colors } from "@/constants/theme";
 import {
@@ -19,85 +18,49 @@ import {
   type RegisterMutationData,
   type RegisterMutationVariables,
 } from "@/graphql/auth";
+import { Controller, SubmitHandler, useForm } from "react-hook-form";
+
+type Inputs = {
+  type: UserRole;
+  email: string;
+  phone: string;
+  password: string;
+};
 
 export default function RegisterScreen() {
-  const [role, setRole] = useState<UserRole>("patient");
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const { control, handleSubmit, setValue, watch } = useForm<Inputs>({
+    defaultValues: {
+      type: "patient",
+    },
+  });
+
   const { signIn } = useSession();
   const [register, { loading }] = useMutation<
     RegisterMutationData,
     RegisterMutationVariables
   >(REGISTER_MUTATION);
 
-  const handleSubmit = async () => {
-    const trimmedEmail = email.trim();
-    const trimmedPhone = phone.trim();
-    const trimmedPassword = password.trim();
-
-    if (!trimmedEmail || !trimmedPhone || !trimmedPassword) {
-      setErrorMessage(
-        "Please complete all fields before creating your account.",
-      );
-      return;
-    }
-
-    if (!trimmedEmail.includes("@")) {
-      setErrorMessage("Please enter a valid email address.");
-      return;
-    }
-
-    if (trimmedPhone.length < 8) {
-      setErrorMessage("Please enter a valid phone number.");
-      return;
-    }
-
-    if (trimmedPassword.length < 6) {
-      setErrorMessage("Password must be at least 6 characters long.");
-      return;
-    }
-
-    setErrorMessage("");
-    setSuccessMessage("");
-
-    try {
-      const { data } = await register({
-        variables: {
-          input: {
-            email: trimmedEmail,
-            phone: trimmedPhone,
-            password: trimmedPassword,
-            role,
+  const onSubmit: SubmitHandler<Inputs> = (data) => {
+    register({
+      variables: {
+        input: {
+          email: data?.email,
+          phone: data?.phone,
+          password: data?.password,
+          role: data?.type,
+        },
+      },
+      onCompleted: async (data: any) => {
+        await signIn({
+          accessToken: data?.accessToken,
+          user: {
+            id: data?.user.id,
+            email: data?.user.email,
           },
-        },
-      });
-
-      const payload = data?.register;
-
-      if (!payload) {
-        setErrorMessage("We could not create your account. Please try again.");
-        return;
-      }
-
-      await signIn({
-        accessToken: payload.accessToken,
-        user: {
-          id: payload.user.id,
-          email: payload.user.email,
-        },
-        role: payload.user.role ?? role,
-      });
-      setSuccessMessage(`Account created for ${payload.user.email}.`);
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Something went wrong while creating your account.";
-      setErrorMessage(message);
-    }
+          role: data?.user.role,
+        });
+      },
+    });
   };
 
   return (
@@ -122,13 +85,13 @@ export default function RegisterScreen() {
 
           <View style={styles.roleRow}>
             {(["patient", "doctor"] as UserRole[]).map((option) => {
-              const selected = role === option;
+              const selected = watch("type") === option;
 
               return (
                 <Pressable
                   key={option}
                   style={[styles.roleChip, selected && styles.roleChipSelected]}
-                  onPress={() => setRole(option)}
+                  onPress={() => setValue("type", option)}
                 >
                   <Text
                     style={[
@@ -143,46 +106,61 @@ export default function RegisterScreen() {
             })}
           </View>
 
-          <TextInput
-            autoCapitalize="none"
-            placeholder="Email"
-            placeholderTextColor={Colors.textMuted}
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                autoCapitalize="none"
+                placeholder="Email"
+                placeholderTextColor={Colors.textMuted}
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+              />
+            )}
           />
 
-          <TextInput
-            keyboardType="phone-pad"
-            placeholder="Phone"
-            placeholderTextColor={Colors.textMuted}
-            style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
+          <Controller
+            control={control}
+            name="phone"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                autoCapitalize="none"
+                placeholder="Email"
+                placeholderTextColor={Colors.textMuted}
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+              />
+            )}
           />
 
-          <TextInput
-            placeholder="Password"
-            placeholderTextColor={Colors.textMuted}
-            secureTextEntry
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                autoCapitalize="none"
+                placeholder="Email"
+                placeholderTextColor={Colors.textMuted}
+                style={styles.input}
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                secureTextEntry
+              />
+            )}
           />
-
-          {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
-          ) : null}
-          {successMessage ? (
-            <Text style={styles.successText}>{successMessage}</Text>
-          ) : null}
 
           <Pressable
             style={[
               styles.primaryButton,
               loading && styles.primaryButtonDisabled,
             ]}
-            onPress={handleSubmit}
+            onPress={handleSubmit(onSubmit)}
             disabled={loading}
           >
             <Text style={styles.primaryButtonText}>

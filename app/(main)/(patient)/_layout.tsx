@@ -35,6 +35,15 @@ export default function PatientTabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="menu"
+        options={{
+          title: 'Menu',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons color={color} name="menu" size={size} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

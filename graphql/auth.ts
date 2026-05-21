@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const LOGIN_MUTATION = gql`
   mutation Login($input: LoginInput!) {
@@ -28,7 +28,7 @@ export const REGISTER_MUTATION = gql`
   }
 `;
 
-export type UserRole = 'patient' | 'doctor';
+export type UserRole = "PATIENT" | "DOCTOR";
 
 export type AuthUser = {
   id: string;

@@ -1,10 +1,12 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Tabs } from 'expo-router';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Tabs } from "expo-router";
 
-import { HapticTab } from '@/components/haptic-tab';
-import { Colors } from '@/constants/theme';
+import { HapticTab } from "@/components/haptic-tab";
+import { Colors } from "@/constants/theme";
 
 export default function DoctorTabsLayout() {
+  console.log("doc layout");
+
   return (
     <Tabs
       screenOptions={{
@@ -18,26 +20,33 @@ export default function DoctorTabsLayout() {
           height: 82,
           paddingTop: 8,
         },
-      }}>
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Overview',
-          tabBarIcon: ({ color, size }) => <MaterialIcons color={color} name="dashboard" size={size} />,
+          title: "Overview",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons color={color} name="dashboard" size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="patients"
         options={{
-          title: 'Patients',
-          tabBarIcon: ({ color, size }) => <MaterialIcons color={color} name="groups" size={size} />,
+          title: "Patients",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons color={color} name="groups" size={size} />
+          ),
         }}
       />
       <Tabs.Screen
         name="menu"
         options={{
-          title: 'Menu',
-          tabBarIcon: ({ color, size }) => <MaterialIcons color={color} name="menu" size={size} />,
+          title: "Menu",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons color={color} name="menu" size={size} />
+          ),
         }}
       />
     </Tabs>

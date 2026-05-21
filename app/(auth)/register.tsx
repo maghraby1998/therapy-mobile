@@ -30,7 +30,7 @@ type Inputs = {
 export default function RegisterScreen() {
   const { control, handleSubmit, setValue, watch } = useForm<Inputs>({
     defaultValues: {
-      type: "patient",
+      type: "PATIENT",
     },
   });
 
@@ -51,13 +51,15 @@ export default function RegisterScreen() {
         },
       },
       onCompleted: async (data: any) => {
+        console.log("on comp data", data);
+
         await signIn({
-          accessToken: data?.accessToken,
+          accessToken: data?.register?.accessToken,
           user: {
-            id: data?.user.id,
-            email: data?.user.email,
+            id: data?.register?.user.id,
+            email: data?.register?.user.email,
           },
-          role: data?.user.role,
+          role: data?.register?.user.role,
         });
       },
     });
@@ -84,7 +86,7 @@ export default function RegisterScreen() {
           <Text style={styles.cardTitle}>Register</Text>
 
           <View style={styles.roleRow}>
-            {(["patient", "doctor"] as UserRole[]).map((option) => {
+            {(["PATIENT", "DOCTOR"] as UserRole[]).map((option) => {
               const selected = watch("type") === option;
 
               return (
@@ -99,7 +101,7 @@ export default function RegisterScreen() {
                       selected && styles.roleChipTextSelected,
                     ]}
                   >
-                    {option === "patient" ? "Patient" : "Doctor"}
+                    {option === "PATIENT" ? "Patient" : "Doctor"}
                   </Text>
                 </Pressable>
               );
@@ -128,7 +130,7 @@ export default function RegisterScreen() {
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 autoCapitalize="none"
-                placeholder="Email"
+                placeholder="phone"
                 placeholderTextColor={Colors.textMuted}
                 style={styles.input}
                 value={value}
@@ -144,7 +146,7 @@ export default function RegisterScreen() {
             render={({ field: { onChange, onBlur, value } }) => (
               <TextInput
                 autoCapitalize="none"
-                placeholder="Email"
+                placeholder="password"
                 placeholderTextColor={Colors.textMuted}
                 style={styles.input}
                 value={value}

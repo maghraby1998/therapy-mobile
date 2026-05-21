@@ -1,15 +1,15 @@
-import { ReactNode, createContext, use, useEffect, useState } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
+import { ReactNode, createContext, use, useEffect, useState } from "react";
 
 import {
   type PersistedSession,
   type SessionStatus,
   type SessionUser,
   type UserRole,
-} from '@/constants/session';
-import { apolloClient, setApolloAccessToken } from '@/lib/apollo';
+} from "@/constants/session";
+import { apolloClient, setApolloAccessToken } from "@/lib/apollo";
 
-const SESSION_STORAGE_KEY = 'therapy-mobile.session';
+const SESSION_STORAGE_KEY = "therapy-mobile.session";
 
 type SignInPayload = {
   accessToken: string;
@@ -30,18 +30,18 @@ type SessionContextValue = {
 const SessionContext = createContext<SessionContextValue | null>(null);
 
 function isPersistedSession(value: unknown): value is PersistedSession {
-  if (!value || typeof value !== 'object') {
+  if (!value || typeof value !== "object") {
     return false;
   }
 
   const session = value as Partial<PersistedSession>;
 
   return (
-    typeof session.accessToken === 'string' &&
+    typeof session.accessToken === "string" &&
     !!session.user &&
-    typeof session.user.id === 'string' &&
-    typeof session.user.email === 'string' &&
-    (session.role === 'patient' || session.role === 'doctor')
+    typeof session.user.id === "string" &&
+    typeof session.user.email === "string" &&
+    (session.role === "PATIENT" || session.role === "DOCTOR")
   );
 }
 
@@ -54,7 +54,7 @@ async function clearPersistedSession() {
 }
 
 export function AppSessionProvider({ children }: { children: ReactNode }) {
-  const [status, setStatus] = useState<SessionStatus>('loading');
+  const [status, setStatus] = useState<SessionStatus>("loading");
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [role, setRole] = useState<UserRole | null>(null);
@@ -70,7 +70,7 @@ export function AppSessionProvider({ children }: { children: ReactNode }) {
           setApolloAccessToken(null);
 
           if (isMounted) {
-            setStatus('unauthenticated');
+            setStatus("unauthenticated");
           }
           return;
         }
@@ -82,7 +82,7 @@ export function AppSessionProvider({ children }: { children: ReactNode }) {
           setApolloAccessToken(null);
 
           if (isMounted) {
-            setStatus('unauthenticated');
+            setStatus("unauthenticated");
           }
           return;
         }
@@ -93,14 +93,14 @@ export function AppSessionProvider({ children }: { children: ReactNode }) {
           setAccessToken(parsedValue.accessToken);
           setUser(parsedValue.user);
           setRole(parsedValue.role);
-          setStatus('authenticated');
+          setStatus("authenticated");
         }
       } catch {
         await clearPersistedSession();
         setApolloAccessToken(null);
 
         if (isMounted) {
-          setStatus('unauthenticated');
+          setStatus("unauthenticated");
         }
       }
     }
@@ -114,7 +114,7 @@ export function AppSessionProvider({ children }: { children: ReactNode }) {
 
   const value: SessionContextValue = {
     status,
-    isAuthenticated: status === 'authenticated',
+    isAuthenticated: status === "authenticated",
     accessToken,
     user,
     role,
@@ -130,7 +130,7 @@ export function AppSessionProvider({ children }: { children: ReactNode }) {
       setAccessToken(payload.accessToken);
       setUser(payload.user);
       setRole(payload.role);
-      setStatus('authenticated');
+      setStatus("authenticated");
     },
     async signOut() {
       await clearPersistedSession();
@@ -138,7 +138,7 @@ export function AppSessionProvider({ children }: { children: ReactNode }) {
       setAccessToken(null);
       setUser(null);
       setRole(null);
-      setStatus('unauthenticated');
+      setStatus("unauthenticated");
       await apolloClient.clearStore();
     },
   };
@@ -150,7 +150,7 @@ export function useSession() {
   const context = use(SessionContext);
 
   if (!context) {
-    throw new Error('useSession must be used within AppSessionProvider.');
+    throw new Error("useSession must be used within AppSessionProvider.");
   }
 
   return context;

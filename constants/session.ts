@@ -1,11 +1,11 @@
-export type UserRole = 'patient' | 'doctor';
+export type UserRole = "PATIENT" | "DOCTOR";
 
 export type SessionUser = {
   id: string;
   email: string;
 };
 
-export type SessionStatus = 'loading' | 'authenticated' | 'unauthenticated';
+export type SessionStatus = "loading" | "authenticated" | "unauthenticated";
 
 export type PersistedSession = {
   accessToken: string;

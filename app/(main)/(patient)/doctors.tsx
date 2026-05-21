@@ -1,5 +1,6 @@
-import { useMutation, useQuery } from '@apollo/client';
-import { useMemo, useState } from 'react';
+import { useMutation, useQuery } from "@apollo/client";
+import moment from "moment";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -10,10 +11,10 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
+} from "react-native";
 
-import { ScreenShell } from '@/components/screen-shell';
-import { Colors } from '@/constants/theme';
+import { ScreenShell } from "@/components/screen-shell";
+import { Colors } from "@/constants/theme";
 import {
   BOOK_SESSION_MUTATION,
   BookSessionMutationData,
@@ -21,7 +22,7 @@ import {
   Doctor,
   DOCTORS_QUERY,
   DoctorsQueryData,
-} from '@/graphql/doctors';
+} from "@/graphql/doctors";
 
 function toDateTimeInputValue(date: Date) {
   return date.toISOString().slice(0, 16);
@@ -53,7 +54,8 @@ function getDefaultSessionTime() {
 }
 
 export default function PatientDoctorsScreen() {
-  const { data, loading, error, refetch } = useQuery<DoctorsQueryData>(DOCTORS_QUERY);
+  const { data, loading, error, refetch } =
+    useQuery<DoctorsQueryData>(DOCTORS_QUERY);
   const [bookSession, { loading: booking }] = useMutation<
     BookSessionMutationData,
     BookSessionMutationVariables
@@ -63,7 +65,7 @@ export default function PatientDoctorsScreen() {
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [startsAt, setStartsAt] = useState(defaults.startsAt);
   const [endsAt, setEndsAt] = useState(defaults.endsAt);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -84,12 +86,12 @@ export default function PatientDoctorsScreen() {
     const endsAtIso = toIsoDateTime(endsAt);
 
     if (!startsAtIso || !endsAtIso) {
-      setFormError('Enter valid start and end date-times.');
+      setFormError("Enter valid start and end date-times.");
       return;
     }
 
     if (new Date(endsAtIso).getTime() <= new Date(startsAtIso).getTime()) {
-      setFormError('End time must be after the start time.');
+      setFormError("End time must be after the start time.");
       return;
     }
 
@@ -99,17 +101,21 @@ export default function PatientDoctorsScreen() {
         variables: {
           input: {
             doctorId: selectedDoctor.id,
-            startsAt: startsAtIso,
-            endsAt: endsAtIso,
+            startsAt: moment().format("YYYY-MM-DD hh:mm:ss"),
+            endsAt: moment().add(1, "hour").format("YYYY-MM-DD hh:mm:ss"),
             notes: notes.trim() || null,
           },
         },
       });
-      setSuccessMessage(`Session booked with ${selectedDoctor.fullName ?? 'this doctor'}.`);
-      setNotes('');
+      setSuccessMessage(
+        `Session booked with ${selectedDoctor.fullName ?? "this doctor"}.`,
+      );
+      setNotes("");
     } catch (bookingError) {
       const message =
-        bookingError instanceof Error ? bookingError.message : 'Could not book this session.';
+        bookingError instanceof Error
+          ? bookingError.message
+          : "Could not book this session.";
       setFormError(message);
     }
   };
@@ -117,14 +123,19 @@ export default function PatientDoctorsScreen() {
   return (
     <ScreenShell>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.keyboardView}>
-        <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          contentContainerStyle={styles.container}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.header}>
             <Text style={styles.eyebrow}>Care team</Text>
             <Text style={styles.title}>Find a doctor</Text>
             <Text style={styles.subtitle}>
-              Browse available doctors and request a session time that works for you.
+              Browse available doctors and request a session time that works for
+              you.
             </Text>
           </View>
 
@@ -138,7 +149,10 @@ export default function PatientDoctorsScreen() {
           {error ? (
             <View style={styles.stateCard}>
               <Text style={styles.errorText}>{error.message}</Text>
-              <Pressable style={styles.secondaryButton} onPress={() => refetch()}>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => refetch()}
+              >
                 <Text style={styles.secondaryButtonText}>Try again</Text>
               </Pressable>
             </View>
@@ -146,7 +160,9 @@ export default function PatientDoctorsScreen() {
 
           {!loading && !error && doctors.length === 0 ? (
             <View style={styles.stateCard}>
-              <Text style={styles.stateText}>No doctors are available yet.</Text>
+              <Text style={styles.stateText}>
+                No doctors are available yet.
+              </Text>
             </View>
           ) : null}
 
@@ -154,27 +170,44 @@ export default function PatientDoctorsScreen() {
             const selected = selectedDoctor?.id === doctor.id;
 
             return (
-              <View key={doctor.id} style={[styles.card, selected && styles.selectedCard]}>
+              <View
+                key={doctor.id}
+                style={[styles.card, selected && styles.selectedCard]}
+              >
                 <View style={styles.cardHeader}>
                   <View style={styles.doctorInfo}>
-                    <Text style={styles.name}>{doctor.fullName ?? 'Unnamed doctor'}</Text>
-                    <Text style={styles.specialty}>{doctor.specialty ?? 'General therapy'}</Text>
+                    <Text style={styles.name}>
+                      {doctor.fullName ?? "Unnamed doctor"}
+                    </Text>
+                    <Text style={styles.specialty}>
+                      {doctor.specialty ?? "General therapy"}
+                    </Text>
                   </View>
                   <Pressable
-                    style={[styles.bookButton, selected && styles.bookButtonSelected]}
-                    onPress={() => selectDoctor(doctor)}>
-                    <Text style={styles.bookButtonText}>{selected ? 'Selected' : 'Book'}</Text>
+                    style={[
+                      styles.bookButton,
+                      selected && styles.bookButtonSelected,
+                    ]}
+                    onPress={() => selectDoctor(doctor)}
+                  >
+                    <Text style={styles.bookButtonText}>
+                      {selected ? "Selected" : "Book"}
+                    </Text>
                   </Pressable>
                 </View>
 
-                {doctor.bio ? <Text style={styles.bio}>{doctor.bio}</Text> : null}
+                {doctor.bio ? (
+                  <Text style={styles.bio}>{doctor.bio}</Text>
+                ) : null}
               </View>
             );
           })}
 
           {selectedDoctor ? (
             <View style={styles.bookingPanel}>
-              <Text style={styles.formTitle}>Book with {selectedDoctor.fullName ?? 'doctor'}</Text>
+              <Text style={styles.formTitle}>
+                Book with {selectedDoctor.fullName ?? "doctor"}
+              </Text>
 
               <Text style={styles.label}>Starts at</Text>
               <TextInput
@@ -206,13 +239,18 @@ export default function PatientDoctorsScreen() {
                 onChangeText={setNotes}
               />
 
-              {formError ? <Text style={styles.errorText}>{formError}</Text> : null}
-              {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
+              {formError ? (
+                <Text style={styles.errorText}>{formError}</Text>
+              ) : null}
+              {successMessage ? (
+                <Text style={styles.successText}>{successMessage}</Text>
+              ) : null}
 
               <Pressable
                 disabled={booking}
                 style={[styles.submitButton, booking && styles.disabledButton]}
-                onPress={submitBooking}>
+                onPress={submitBooking}
+              >
                 {booking ? (
                   <ActivityIndicator color={Colors.text} />
                 ) : (
@@ -243,14 +281,14 @@ const styles = StyleSheet.create({
   eyebrow: {
     color: Colors.accent,
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: 2,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   title: {
     color: Colors.text,
     fontSize: 32,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   subtitle: {
     color: Colors.textMuted,
@@ -258,7 +296,7 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
   stateCard: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: Colors.backgroundElevated,
     borderColor: Colors.border,
     borderRadius: 22,
@@ -269,7 +307,7 @@ const styles = StyleSheet.create({
   stateText: {
     color: Colors.textMuted,
     fontSize: 15,
-    textAlign: 'center',
+    textAlign: "center",
   },
   card: {
     backgroundColor: Colors.backgroundElevated,
@@ -283,10 +321,10 @@ const styles = StyleSheet.create({
     borderColor: Colors.accent,
   },
   cardHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    flexDirection: "row",
     gap: 12,
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   },
   doctorInfo: {
     flex: 1,
@@ -295,12 +333,12 @@ const styles = StyleSheet.create({
   name: {
     color: Colors.text,
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   specialty: {
     color: Colors.primarySoft,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   bio: {
     color: Colors.textMuted,
@@ -320,8 +358,8 @@ const styles = StyleSheet.create({
   bookButtonText: {
     color: Colors.text,
     fontSize: 14,
-    fontWeight: '700',
-    textAlign: 'center',
+    fontWeight: "700",
+    textAlign: "center",
   },
   bookingPanel: {
     backgroundColor: Colors.surface,
@@ -334,13 +372,13 @@ const styles = StyleSheet.create({
   formTitle: {
     color: Colors.text,
     fontSize: 20,
-    fontWeight: '800',
+    fontWeight: "800",
     marginBottom: 4,
   },
   label: {
     color: Colors.text,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   input: {
     backgroundColor: Colors.backgroundElevated,
@@ -354,7 +392,7 @@ const styles = StyleSheet.create({
   },
   notesInput: {
     minHeight: 96,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   errorText: {
     color: Colors.danger,
@@ -364,15 +402,15 @@ const styles = StyleSheet.create({
   successText: {
     color: Colors.success,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     lineHeight: 20,
   },
   submitButton: {
-    alignItems: 'center',
+    alignItems: "center",
     backgroundColor: Colors.primary,
     borderRadius: 16,
     minHeight: 50,
-    justifyContent: 'center',
+    justifyContent: "center",
     marginTop: 4,
   },
   disabledButton: {
@@ -381,7 +419,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: Colors.text,
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: "800",
   },
   secondaryButton: {
     borderColor: Colors.border,
@@ -393,6 +431,6 @@ const styles = StyleSheet.create({
   secondaryButtonText: {
     color: Colors.text,
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

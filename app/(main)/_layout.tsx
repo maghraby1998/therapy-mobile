@@ -1,6 +1,6 @@
-import { Redirect, Stack } from 'expo-router';
+import { Redirect, Stack } from "expo-router";
 
-import { useSession } from '@/components/providers/session-provider';
+import { useSession } from "@/components/providers/session-provider";
 
 export default function MainLayout() {
   const { isAuthenticated, role } = useSession();
@@ -11,7 +11,7 @@ export default function MainLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {role === 'doctor' ? (
+      {role === "DOCTOR" ? (
         <Stack.Screen name="(doctor)" />
       ) : (
         <Stack.Screen name="(patient)" />

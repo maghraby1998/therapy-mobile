@@ -1,6 +1,6 @@
-import { Redirect } from 'expo-router';
+import { Redirect } from "expo-router";
 
-import { useSession } from '@/components/providers/session-provider';
+import { useSession } from "@/components/providers/session-provider";
 
 export default function IndexScreen() {
   const { isAuthenticated, role } = useSession();
@@ -9,5 +9,9 @@ export default function IndexScreen() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  return <Redirect href={role === 'doctor' ? '/(main)/(doctor)' : '/(main)/(patient)'} />;
+  return (
+    <Redirect
+      href={role === "DOCTOR" ? "/(main)/(doctor)" : "/(main)/(patient)"}
+    />
+  );
 }

@@ -1,10 +1,10 @@
 import {
   ApolloClient,
   ApolloLink,
-  HttpLink,
   InMemoryCache,
   NormalizedCacheObject,
 } from "@apollo/client";
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 import { setContext } from "@apollo/client/link/context";
 
 const GRAPHQL_API_URL = "https://51b9-41-239-30-50.ngrok-free.app/graphql";
@@ -24,8 +24,11 @@ const authLink = setContext((_, { headers }) => {
   };
 });
 
-const httpLink = new HttpLink({
+const httpLink = createUploadLink({
   uri: GRAPHQL_API_URL,
+  headers: {
+    "apollo-require-preflight": "true",
+  }
 });
 
 const link = ApolloLink.from([authLink, httpLink]);

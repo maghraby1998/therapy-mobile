@@ -76,7 +76,7 @@ export type SubmitDoctorVerificationDocumentMutationData = {
 export type SubmitDoctorVerificationDocumentMutationVariables = {
   input: {
     documentTypeId: string;
-    fileUrl: string;
+    file: any;
     issuer?: string | null;
     notes?: string | null;
   };

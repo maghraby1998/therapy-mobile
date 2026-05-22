@@ -1,5 +1,6 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useMutation, useQuery } from "@apollo/client";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useRouter } from "expo-router";
 import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,9 +10,9 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Switch,
   Text,
-  TextInput,
-  View,
+  View
 } from "react-native";
 
 import { ScreenShell } from "@/components/screen-shell";
@@ -28,6 +29,9 @@ import {
 const CAN_SUBMIT_DOCUMENTS = true;
 
 export default function DoctorCertificatesScreen() {
+  const [showRequiredOnly, setShowRequiredOnly] = useState(false);
+  const [showSubmittedOnly, setShowSubmittedOnly] = useState(false);
+
   const { data, loading, error, refetch } =
     useQuery<DoctorCertificatesQueryData>(DOCTOR_CERTIFICATES_QUERY);
   const [submitDocument, { loading: submitting }] = useMutation<
@@ -38,29 +42,10 @@ export default function DoctorCertificatesScreen() {
     awaitRefetchQueries: true,
   });
 
-  const activeDocumentTypes = useMemo(
-    () =>
-      (data?.verificationDocumentTypes ?? []).filter(
-        (documentType) => documentType.isActive,
-      ),
-    [data?.verificationDocumentTypes],
-  );
   const submittedCertificates = useMemo(
     () => data?.mySubmittedCertificates ?? [],
     [data?.mySubmittedCertificates],
   );
-
-  const [selectedDocumentTypeId, setSelectedDocumentTypeId] = useState("");
-  const [issuer, setIssuer] = useState("");
-  const [fileUrl, setFileUrl] = useState("");
-  const [notes, setNotes] = useState("");
-  const [formError, setFormError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-
-  const selectedDocumentType =
-    activeDocumentTypes.find(
-      (documentType) => documentType.id === selectedDocumentTypeId,
-    ) ?? null;
 
   const submittedByDocumentTypeId = useMemo(() => {
     return new Set(
@@ -70,61 +55,31 @@ export default function DoctorCertificatesScreen() {
     );
   }, [submittedCertificates]);
 
+  const activeDocumentTypes = useMemo(
+    () => {
+      let types = (data?.verificationDocumentTypes ?? []).filter(
+        (documentType) => documentType.isActive,
+      );
+      if (showRequiredOnly) {
+        types = types.filter((documentType) => documentType.isRequired);
+      }
+      if (showSubmittedOnly) {
+        types = types.filter((documentType) => submittedByDocumentTypeId.has(documentType.id));
+      }
+      return types;
+    },
+    [data?.verificationDocumentTypes, showRequiredOnly, showSubmittedOnly, submittedByDocumentTypeId],
+  );
+
+  const router = useRouter();
+
   const selectDocumentType = (documentType: DoctorVerificationDocumentType) => {
-    if (!CAN_SUBMIT_DOCUMENTS) {
-      return;
-    }
-
-    setSelectedDocumentTypeId(documentType.id);
-    setFormError(null);
-    setSuccessMessage(null);
-  };
-
-  const submitCertificate = async () => {
-    if (!CAN_SUBMIT_DOCUMENTS) {
-      setFormError("Document uploads are closed after admin acceptance.");
-      return;
-    }
-
-    if (!selectedDocumentTypeId) {
-      setFormError("Choose the document type you want to submit.");
-      return;
-    }
-
-    if (!fileUrl.trim()) {
-      setFormError("Add the document file URL.");
-      return;
-    }
-
-    if (!issuer.trim()) {
-      setFormError("Add the issuing organization.");
-      return;
-    }
-
-    try {
-      setFormError(null);
-      await submitDocument({
-        variables: {
-          input: {
-            documentTypeId: selectedDocumentTypeId,
-            fileUrl: fileUrl.trim(),
-            issuer: issuer.trim(),
-            notes: notes.trim() || null,
-          },
-        },
-      });
-      setSuccessMessage("Certificate submitted for admin review.");
-      setIssuer("");
-      setFileUrl("");
-      setNotes("");
-      setSelectedDocumentTypeId("");
-    } catch (submitError) {
-      const message =
-        submitError instanceof Error
-          ? submitError.message
-          : "Could not submit this certificate.";
-      setFormError(message);
-    }
+    router.push({
+      pathname: "/(main)/(doctor)/certificate/[id]",
+      params: {
+        id: documentType.id,
+      },
+    });
   };
 
   return (
@@ -182,7 +137,29 @@ export default function DoctorCertificatesScreen() {
           {!loading && !error ? (
             <>
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Required documents</Text>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Required documents</Text>
+                  <View style={styles.filtersContainer}>
+                    <View style={styles.filterRow}>
+                      <Text style={styles.filterText}>Show required only</Text>
+                      <Switch
+                        onValueChange={setShowRequiredOnly}
+                        value={showRequiredOnly}
+                        trackColor={{ false: Colors.border, true: Colors.primary }}
+                        thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : showRequiredOnly ? '#FFFFFF' : '#f4f3f4'}
+                      />
+                    </View>
+                    <View style={styles.filterRow}>
+                      <Text style={styles.filterText}>Show submitted only</Text>
+                      <Switch
+                        onValueChange={setShowSubmittedOnly}
+                        value={showSubmittedOnly}
+                        trackColor={{ false: Colors.border, true: Colors.primary }}
+                        thumbColor={Platform.OS === 'ios' ? '#FFFFFF' : showSubmittedOnly ? '#FFFFFF' : '#f4f3f4'}
+                      />
+                    </View>
+                  </View>
+                </View>
                 {activeDocumentTypes.length === 0 ? (
                   <View style={styles.stateCard}>
                     <Text style={styles.stateText}>
@@ -192,8 +169,6 @@ export default function DoctorCertificatesScreen() {
                 ) : null}
 
                 {activeDocumentTypes.map((documentType) => {
-                  const isSelected =
-                    selectedDocumentTypeId === documentType.id;
                   const isSubmitted = submittedByDocumentTypeId.has(
                     documentType.id,
                   );
@@ -206,7 +181,6 @@ export default function DoctorCertificatesScreen() {
                       onPress={() => selectDocumentType(documentType)}
                       style={[
                         styles.documentCard,
-                        isSelected && styles.selectedDocumentCard,
                         !CAN_SUBMIT_DOCUMENTS && styles.disabledCard,
                       ]}
                     >
@@ -233,133 +207,29 @@ export default function DoctorCertificatesScreen() {
                             {documentType.description}
                           </Text>
                         ) : null}
-                        <Text
+                        <View
                           style={[
-                            styles.documentStatus,
-                            isSubmitted && styles.submittedStatus,
+                            styles.statusBadge,
+                            isSubmitted
+                              ? styles.statusBadgeSubmitted
+                              : styles.statusBadgeNotSubmitted,
                           ]}
                         >
-                          {isSubmitted
-                            ? "Submitted"
-                            : "Waiting for submission"}
-                        </Text>
+                          <Text
+                            style={[
+                              styles.statusBadgeText,
+                              isSubmitted
+                                ? styles.statusBadgeTextSubmitted
+                                : styles.statusBadgeTextNotSubmitted,
+                            ]}
+                          >
+                            {isSubmitted ? "Submitted" : "Not Submitted"}
+                          </Text>
+                        </View>
                       </View>
                     </Pressable>
                   );
                 })}
-              </View>
-
-              {CAN_SUBMIT_DOCUMENTS ? (
-                <View style={styles.formPanel}>
-                  <Text style={styles.formTitle}>Submit document</Text>
-                  <Text style={styles.formHint}>
-                    {selectedDocumentType
-                      ? selectedDocumentType.name
-                      : "Choose a required document above to begin."}
-                  </Text>
-
-                  <Text style={styles.label}>Issuer</Text>
-                  <TextInput
-                    placeholder="Issuing organization"
-                    placeholderTextColor={Colors.textMuted}
-                    style={styles.input}
-                    value={issuer}
-                    onChangeText={setIssuer}
-                  />
-
-                  <Text style={styles.label}>Document URL</Text>
-                  <TextInput
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    keyboardType="url"
-                    placeholder="https://..."
-                    placeholderTextColor={Colors.textMuted}
-                    style={styles.input}
-                    value={fileUrl}
-                    onChangeText={setFileUrl}
-                  />
-
-                  <Text style={styles.label}>Notes</Text>
-                  <TextInput
-                    multiline
-                    placeholder="Optional notes for admin review"
-                    placeholderTextColor={Colors.textMuted}
-                    style={[styles.input, styles.notesInput]}
-                    value={notes}
-                    onChangeText={setNotes}
-                  />
-
-                  {formError ? (
-                    <Text style={styles.errorText}>{formError}</Text>
-                  ) : null}
-                  {successMessage ? (
-                    <Text style={styles.successText}>{successMessage}</Text>
-                  ) : null}
-
-                  <Pressable
-                    accessibilityRole="button"
-                    disabled={submitting}
-                    onPress={submitCertificate}
-                    style={[
-                      styles.submitButton,
-                      submitting && styles.disabledButton,
-                    ]}
-                  >
-                    {submitting ? (
-                      <ActivityIndicator color={Colors.text} />
-                    ) : (
-                      <Text style={styles.submitButtonText}>
-                        Submit certificate
-                      </Text>
-                    )}
-                  </Pressable>
-                </View>
-              ) : null}
-
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Submitted certificates</Text>
-                {submittedCertificates.length === 0 ? (
-                  <View style={styles.stateCard}>
-                    <Text style={styles.stateText}>
-                      You have not submitted any certificates yet.
-                    </Text>
-                  </View>
-                ) : null}
-
-                {submittedCertificates.map((certificate) => (
-                  <View key={certificate.id} style={styles.certificateCard}>
-                    <View style={styles.certificateHeader}>
-                      <View style={styles.documentInfo}>
-                        <Text style={styles.documentName}>
-                          {certificate.title}
-                        </Text>
-                        <Text style={styles.documentDescription}>
-                          {certificate.documentType?.name ??
-                            "Verification document"}
-                        </Text>
-                      </View>
-                      <Pressable
-                        accessibilityRole="link"
-                        onPress={() => Linking.openURL(certificate.fileUrl)}
-                        style={styles.openButton}
-                      >
-                        <MaterialIcons
-                          color={Colors.text}
-                          name="open-in-new"
-                          size={18}
-                        />
-                        <Text style={styles.openButtonText}>Open</Text>
-                      </Pressable>
-                    </View>
-
-                    <Text style={styles.metaText}>
-                      Issuer: {certificate.issuer}
-                    </Text>
-                    {certificate.notes ? (
-                      <Text style={styles.metaText}>{certificate.notes}</Text>
-                    ) : null}
-                  </View>
-                ))}
               </View>
             </>
           ) : null}
@@ -437,6 +307,27 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "800",
   },
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  filtersContainer: {
+    gap: 8,
+    alignItems: "flex-end",
+  },
+  filterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  filterText: {
+    color: Colors.textMuted,
+    fontSize: 14,
+    fontWeight: "600",
+  },
   documentCard: {
     alignItems: "flex-start",
     backgroundColor: Colors.backgroundElevated,
@@ -446,9 +337,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 12,
     padding: 16,
-  },
-  selectedDocumentCard: {
-    borderColor: Colors.accent,
   },
   disabledCard: {
     opacity: 0.7,
@@ -491,79 +379,34 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     fontSize: 14,
     lineHeight: 20,
-  },
-  documentStatus: {
-    color: Colors.textMuted,
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  submittedStatus: {
-    color: Colors.success,
-  },
-  formPanel: {
-    backgroundColor: Colors.surface,
-    borderColor: Colors.border,
-    borderRadius: 18,
-    borderWidth: 1,
-    gap: 10,
-    padding: 16,
-  },
-  formTitle: {
-    color: Colors.text,
-    fontSize: 20,
-    fontWeight: "800",
-  },
-  formHint: {
-    color: Colors.textMuted,
-    fontSize: 14,
-    lineHeight: 20,
     marginBottom: 4,
   },
-  label: {
-    color: Colors.text,
-    fontSize: 14,
+  statusBadge: {
+    alignSelf: "flex-start",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  statusBadgeSubmitted: {
+    backgroundColor: Colors.success + "20",
+  },
+  statusBadgeNotSubmitted: {
+    backgroundColor: Colors.surfaceMuted,
+  },
+  statusBadgeText: {
+    fontSize: 12,
     fontWeight: "700",
   },
-  input: {
-    backgroundColor: Colors.backgroundElevated,
-    borderColor: Colors.border,
-    borderRadius: 14,
-    borderWidth: 1,
-    color: Colors.text,
-    fontSize: 15,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+  statusBadgeTextSubmitted: {
+    color: Colors.success,
   },
-  notesInput: {
-    minHeight: 92,
-    textAlignVertical: "top",
+  statusBadgeTextNotSubmitted: {
+    color: Colors.textMuted,
   },
   errorText: {
     color: Colors.danger,
     fontSize: 14,
     lineHeight: 20,
-  },
-  successText: {
-    color: Colors.success,
-    fontSize: 14,
-    fontWeight: "700",
-    lineHeight: 20,
-  },
-  submitButton: {
-    alignItems: "center",
-    backgroundColor: Colors.primary,
-    borderRadius: 14,
-    justifyContent: "center",
-    marginTop: 4,
-    minHeight: 50,
-  },
-  disabledButton: {
-    opacity: 0.7,
-  },
-  submitButtonText: {
-    color: Colors.text,
-    fontSize: 16,
-    fontWeight: "800",
   },
   secondaryButton: {
     borderColor: Colors.border,
@@ -576,37 +419,5 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontSize: 14,
     fontWeight: "700",
-  },
-  certificateCard: {
-    backgroundColor: Colors.backgroundElevated,
-    borderColor: Colors.border,
-    borderRadius: 18,
-    borderWidth: 1,
-    gap: 10,
-    padding: 16,
-  },
-  certificateHeader: {
-    alignItems: "flex-start",
-    flexDirection: "row",
-    gap: 12,
-  },
-  openButton: {
-    alignItems: "center",
-    backgroundColor: Colors.primary,
-    borderRadius: 12,
-    flexDirection: "row",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-  },
-  openButtonText: {
-    color: Colors.text,
-    fontSize: 13,
-    fontWeight: "800",
-  },
-  metaText: {
-    color: Colors.textMuted,
-    fontSize: 14,
-    lineHeight: 20,
   },
 });

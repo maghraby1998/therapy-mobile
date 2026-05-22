@@ -59,6 +59,13 @@ export default function DoctorTabsLayout() {
       />
 
       <Tabs.Screen
+        name="certificate/[id]"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="menu"
         options={{
           title: "Menu",

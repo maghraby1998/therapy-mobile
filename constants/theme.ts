@@ -14,6 +14,16 @@ export const Colors = {
   border: '#3A3279',
   danger: '#FF7DA6',
   success: '#63E6BE',
+  light: {
+    text: '#120F2F',
+    background: '#F5F7FF',
+    icon: '#687091',
+  },
+  dark: {
+    text: '#F5F7FF',
+    background: '#120F2F',
+    icon: '#A9B0D0',
+  },
 };
 
 export const AppNavigationTheme = {

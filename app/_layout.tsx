@@ -1,3 +1,4 @@
+import { registerGlobals } from "@livekit/react-native";
 import { ThemeProvider } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
@@ -11,6 +12,8 @@ import {
   useSession,
 } from "@/components/providers/session-provider";
 import { AppNavigationTheme } from "@/constants/theme";
+
+registerGlobals();
 
 export const unstable_settings = {
   anchor: "index",

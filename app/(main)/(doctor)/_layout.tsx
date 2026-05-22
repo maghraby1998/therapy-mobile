@@ -40,6 +40,17 @@ export default function DoctorTabsLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="sessions"
+        options={{
+          title: "Sessions",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons color={color} name="event-note" size={size} />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="menu"
         options={{

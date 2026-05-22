@@ -11,6 +11,7 @@ export default function MainLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="video-call" />
       {role === "DOCTOR" ? (
         <Stack.Screen name="(doctor)" />
       ) : (

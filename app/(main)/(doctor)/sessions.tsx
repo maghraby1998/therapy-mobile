@@ -10,8 +10,8 @@ const GET_MY_SESSIONS = gql`
   query MySessions {
     mySessions {
       id
-      doctor {
-        doctorProfile {
+      patient {
+        patientProfile {
           fullName
         }
       }
@@ -23,13 +23,13 @@ const GET_MY_SESSIONS = gql`
   }
 `;
 
-export default function PatientSessionsScreen() {
+export default function DoctorSessionsScreen() {
   const { data } = useQuery<{
     mySessions: {
       id: number;
       startsAt: string;
       endsAt: string;
-      doctor: { doctorProfile: { fullName: string } };
+      patient: { patientProfile: { fullName: string } };
       roomName: string | null;
       status: string;
     }[];
@@ -42,7 +42,7 @@ export default function PatientSessionsScreen() {
       <View style={styles.container}>
         <Text style={styles.title}>Upcoming sessions</Text>
         <Text style={styles.subtitle}>
-          Join once your doctor starts the video call.
+          Start a video call when it is time for the session.
         </Text>
 
         {data?.mySessions.map((session) => (
@@ -55,30 +55,24 @@ export default function PatientSessionsScreen() {
                 {moment(session.startsAt).format("hh:mm A")}
               </Text>
               <Text style={styles.therapist}>
-                {session.doctor.doctorProfile.fullName ?? "doctor name"}
+                {session.patient.patientProfile.fullName ?? "patient name"}
               </Text>
             </View>
             <Pressable
               accessibilityRole="button"
-              disabled={!session.roomName}
               onPress={() =>
                 router.push({
                   pathname: "/video-call",
-                  params: { mode: "join", sessionId: String(session.id) },
+                  params: { mode: "start", sessionId: String(session.id) },
                 } as unknown as Href)
               }
               style={[
                 styles.callButton,
-                session.roomName ? styles.joinButton : styles.waitingButton,
+                session.roomName ? styles.joinButton : styles.startButton,
               ]}
             >
-              <Text
-                style={[
-                  styles.callButtonText,
-                  !session.roomName && styles.waitingButtonText,
-                ]}
-              >
-                {session.roomName ? "Join call" : "Waiting"}
+              <Text style={styles.callButtonText}>
+                {session.roomName ? "Open call" : "Start call"}
               </Text>
             </Pressable>
           </View>
@@ -140,18 +134,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
   },
+  startButton: {
+    backgroundColor: Colors.primary,
+  },
   joinButton: {
     backgroundColor: Colors.success,
-  },
-  waitingButton: {
-    backgroundColor: Colors.surfaceMuted,
   },
   callButtonText: {
     color: Colors.text,
     fontSize: 13,
     fontWeight: "800",
-  },
-  waitingButtonText: {
-    color: Colors.textMuted,
   },
 });

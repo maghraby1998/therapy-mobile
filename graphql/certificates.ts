@@ -1,7 +1,7 @@
 import { gql } from "@apollo/client";
 
-export const DOCTOR_CERTIFICATES_QUERY = gql`
-  query DoctorCertificates {
+export const THERAPIST_CERTIFICATES_QUERY = gql`
+  query TherapistCertificates {
     verificationDocumentTypes {
       id
       name
@@ -26,11 +26,11 @@ export const DOCTOR_CERTIFICATES_QUERY = gql`
   }
 `;
 
-export const SUBMIT_DOCTOR_VERIFICATION_DOCUMENT_MUTATION = gql`
-  mutation SubmitDoctorVerificationDocument(
-    $input: SubmitDoctorVerificationDocumentInput!
+export const SUBMIT_THERAPIST_VERIFICATION_DOCUMENT_MUTATION = gql`
+  mutation SubmitTherapistVerificationDocument(
+    $input: SubmitTherapistVerificationDocumentInput!
   ) {
-    submitDoctorVerificationDocument(input: $input) {
+    submitTherapistVerificationDocument(input: $input) {
       id
       title
       issuer
@@ -47,7 +47,7 @@ export const SUBMIT_DOCTOR_VERIFICATION_DOCUMENT_MUTATION = gql`
   }
 `;
 
-export type DoctorVerificationDocumentType = {
+export type TherapistVerificationDocumentType = {
   id: string;
   name: string;
   description: string | null;
@@ -55,25 +55,25 @@ export type DoctorVerificationDocumentType = {
   isActive: boolean;
 };
 
-export type DoctorCertificate = {
+export type TherapistCertificate = {
   id: string;
   title: string;
   issuer: string;
   fileUrl: string;
   notes: string | null;
-  documentType: DoctorVerificationDocumentType | null;
+  documentType: TherapistVerificationDocumentType | null;
 };
 
-export type DoctorCertificatesQueryData = {
-  verificationDocumentTypes: DoctorVerificationDocumentType[];
-  mySubmittedCertificates: DoctorCertificate[];
+export type TherapistCertificatesQueryData = {
+  verificationDocumentTypes: TherapistVerificationDocumentType[];
+  mySubmittedCertificates: TherapistCertificate[];
 };
 
-export type SubmitDoctorVerificationDocumentMutationData = {
-  submitDoctorVerificationDocument: DoctorCertificate;
+export type SubmitTherapistVerificationDocumentMutationData = {
+  submitTherapistVerificationDocument: TherapistCertificate;
 };
 
-export type SubmitDoctorVerificationDocumentMutationVariables = {
+export type SubmitTherapistVerificationDocumentMutationVariables = {
   input: {
     documentTypeId: string;
     file: any;

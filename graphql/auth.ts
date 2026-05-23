@@ -28,7 +28,7 @@ export const REGISTER_MUTATION = gql`
   }
 `;
 
-export type UserRole = "PATIENT" | "DOCTOR";
+export type UserRole = "CLIENT" | "THERAPIST";
 
 export type AuthUser = {
   id: string;
@@ -59,9 +59,12 @@ export type RegisterMutationData = {
 
 export type RegisterMutationVariables = {
   input: {
+    name: string;
     email: string;
     phone: string;
     password: string;
     role: UserRole;
+    nickname?: string | null;
+    isAnonymous?: boolean | null;
   };
 };

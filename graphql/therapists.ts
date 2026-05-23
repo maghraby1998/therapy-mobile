@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
-export const DOCTORS_QUERY = gql`
-  query Doctors {
-    doctors {
+export const THERAPISTS_QUERY = gql`
+  query Therapists {
+    therapists {
       id
       fullName
       specialty
@@ -19,15 +19,15 @@ export const BOOK_SESSION_MUTATION = gql`
   }
 `;
 
-export type Doctor = {
+export type Therapist = {
   id: string;
   fullName?: string | null;
   specialty?: string | null;
   bio?: string | null;
 };
 
-export type DoctorsQueryData = {
-  doctors: Doctor[];
+export type TherapistsQueryData = {
+  therapists: Therapist[];
 };
 
 export type BookSessionMutationData = {
@@ -38,7 +38,7 @@ export type BookSessionMutationData = {
 
 export type BookSessionMutationVariables = {
   input: {
-    doctorId: string;
+    therapistId: string;
     startsAt: string;
     endsAt: string;
     notes?: string | null;

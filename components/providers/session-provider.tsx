@@ -41,7 +41,7 @@ function isPersistedSession(value: unknown): value is PersistedSession {
     !!session.user &&
     typeof session.user.id === "string" &&
     typeof session.user.email === "string" &&
-    (session.role === "PATIENT" || session.role === "DOCTOR")
+    (session.role === "CLIENT" || session.role === "THERAPIST")
   );
 }
 

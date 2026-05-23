@@ -1,4 +1,4 @@
-export type UserRole = "PATIENT" | "DOCTOR";
+export type UserRole = "CLIENT" | "THERAPIST";
 
 export type SessionUser = {
   id: string;

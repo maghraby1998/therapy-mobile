@@ -4,10 +4,10 @@ import {
   InMemoryCache,
   NormalizedCacheObject,
 } from "@apollo/client";
-import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 import { setContext } from "@apollo/client/link/context";
+import createUploadLink from "apollo-upload-client/createUploadLink.mjs";
 
-const GRAPHQL_API_URL = "https://51b9-41-239-30-50.ngrok-free.app/graphql";
+const GRAPHQL_API_URL = "https://5198-41-239-30-50.ngrok-free.app/graphql";
 
 let accessToken: string | null = null;
 
@@ -28,7 +28,7 @@ const httpLink = createUploadLink({
   uri: GRAPHQL_API_URL,
   headers: {
     "apollo-require-preflight": "true",
-  }
+  },
 });
 
 const link = ApolloLink.from([authLink, httpLink]);

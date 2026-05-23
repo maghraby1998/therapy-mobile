@@ -1,0 +1,11 @@
+node_modules/
+.git/
+.expo/
+android/.gradle/
+android/build/
+android/app/build/
+android/.cxx/
+ios/build/
+ios/Pods/
+*.log
+*.graphql

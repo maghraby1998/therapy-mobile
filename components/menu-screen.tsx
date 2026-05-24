@@ -10,7 +10,7 @@ import { Colors } from '@/constants/theme';
 export function MenuScreen() {
   const { signOut, user, role } = useSession();
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const isDoctor = role === 'DOCTOR';
+  const isDoctor = role === 'DOCTOR' || role === 'THERAPIST';
 
   async function handleLogout() {
     if (isSigningOut) {
@@ -38,24 +38,45 @@ export function MenuScreen() {
 
         <View style={styles.optionList}>
           {isDoctor ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push('/(main)/(doctor)/certificates')}
-              style={({ pressed }) => [
-                styles.option,
-                pressed && styles.optionPressed,
-              ]}>
-              <View style={styles.optionIcon}>
-                <MaterialIcons color={Colors.primarySoft} name="verified-user" size={24} />
-              </View>
-              <View style={styles.optionText}>
-                <Text style={styles.optionTitle}>Certificates</Text>
-                <Text style={styles.optionDescription}>
-                  View required certification documents and submit files.
-                </Text>
-              </View>
-              <MaterialIcons color={Colors.textMuted} name="chevron-right" size={26} />
-            </Pressable>
+            <>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push('/(main)/(doctor)/certificates')}
+                style={({ pressed }) => [
+                  styles.option,
+                  pressed && styles.optionPressed,
+                ]}>
+                <View style={styles.optionIcon}>
+                  <MaterialIcons color={Colors.primarySoft} name="verified-user" size={24} />
+                </View>
+                <View style={styles.optionText}>
+                  <Text style={styles.optionTitle}>Certificates</Text>
+                  <Text style={styles.optionDescription}>
+                    View required certification documents and submit files.
+                  </Text>
+                </View>
+                <MaterialIcons color={Colors.textMuted} name="chevron-right" size={26} />
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push('/(main)/(doctor)/availability-configs')}
+                style={({ pressed }) => [
+                  styles.option,
+                  pressed && styles.optionPressed,
+                ]}>
+                <View style={styles.optionIcon}>
+                  <MaterialIcons color={Colors.accent} name="date-range" size={24} />
+                </View>
+                <View style={styles.optionText}>
+                  <Text style={styles.optionTitle}>Availability</Text>
+                  <Text style={styles.optionDescription}>
+                    Manage schedules, active working days, and time intervals.
+                  </Text>
+                </View>
+                <MaterialIcons color={Colors.textMuted} name="chevron-right" size={26} />
+              </Pressable>
+            </>
           ) : null}
 
           <Pressable

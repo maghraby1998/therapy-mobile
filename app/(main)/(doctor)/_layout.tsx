@@ -66,6 +66,20 @@ export default function DoctorTabsLayout() {
       />
 
       <Tabs.Screen
+        name="availability-configs"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="availability-form"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="menu"
         options={{
           title: "Menu",
